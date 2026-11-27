@@ -384,7 +384,7 @@ vis.events.subscribe(vis.events.WIN_HIGHLIGHT, function(win)
   end
 
   -- Reset viewport to default style so stale styles from LPeg (if any) never bleed through
-  win:style(win.STYLE_DEFAULT, vstart, vend - 1)
+  win:style(ui.style_ids and ui.style_ids.DEFAULT or win.STYLE_DEFAULT, vstart, vend - 1)
 
   local captures = entry.query:captures(tree, content, vstart, vend)
   local style_cache = {}

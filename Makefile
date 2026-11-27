@@ -1,10 +1,14 @@
 CC ?= cc
 CFLAGS ?= -O2 -Wall -Wextra -fPIC
 
-# Auto-detect the Lua headers matching vis (5.4 -> 5.3 -> 5.2 -> 5.1 -> luajit)
+# The Lua version vis links (e.g. Arch's liblua.so.5.5), empty if unknown
+VIS_LUA_VERSION ?= $(shell ldd "$$(command -v vis)" 2>/dev/null | grep -o 'lua[^ ]*\.so[^ ]*' | grep -o '5\.[0-9]' | head -1)
+
+# Auto-detect the Lua headers matching vis; headers for another version crash vis
 LUA_CFLAGS ?= $(shell \
-	for p in lua5.4 lua-5.4 lua lua5.3 lua-5.3 lua5.2 lua-5.2 lua5.1 luajit; do \
-		pkg-config --exists "$$p" 2>/dev/null && pkg-config --cflags "$$p" && exit 0; \
+	for p in lua5.5 lua-5.5 lua5.4 lua-5.4 lua lua5.3 lua-5.3 lua5.2 lua-5.2 lua5.1 luajit; do \
+		pkg-config --exists "$$p" 2>/dev/null || continue; \
+		case "$$(pkg-config --modversion "$$p")" in ("$(VIS_LUA_VERSION)"*) pkg-config --cflags "$$p"; exit 0;; esac; \
 	done; \
 	for d in /usr/include/lua5.4 /usr/include/lua5.3 /usr/include/lua5.2 /usr/include/lua5.1 /usr/local/include/lua5.4 /usr/local/include; do \
 		[ -f "$$d/lua.h" ] && echo "-I$$d" && exit 0; \
